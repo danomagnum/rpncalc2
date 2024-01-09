@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"rpncalc/plugins"
 	"rpncalc/rpncalc"
+	"strings"
+	"sync"
 
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/app"
@@ -15,7 +17,10 @@ import (
 
 var data = []string{}
 
-func makeUI(intp *rpncalc.Interpreter) (fyne.CanvasObject, *fyne.MainMenu) {
+var shutdown_complete sync.WaitGroup
+var shutdown chan struct{}
+
+func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne.MainMenu) {
 	list := widget.NewList(
 		func() int {
 			return len(data)
@@ -27,24 +32,34 @@ func makeUI(intp *rpncalc.Interpreter) (fyne.CanvasObject, *fyne.MainMenu) {
 			o.(*widget.Label).SetText(data[i])
 		})
 
-	estring := ""
-	lstring := "Test"
-	myentrystring := binding.BindString(&estring)
+	//estring := ""
+	lstring := ""
+	//myentrystring := binding.BindString(&estring)
 	mylabelstring := binding.BindString(&lstring)
-	myentry := widget.NewEntryWithData(myentrystring)
-	myentry.OnSubmitted = func(s string) {
+
+	run_and_update := func(s string) {
+
 		err := intp.Parse(s)
 		if err != nil {
 			mylabelstring.Set(err.Error())
 		}
-		myentry.SetText("")
-		//mylabelstring.Set(s)
+
 		data = make([]string, len(intp.Stack))
 		for i := range intp.Stack {
 			data[i] = intp.Stack[i].String()
 		}
 		//data = append(data, s)
 		list.Refresh()
+	}
+
+	//myentry := widget.NewEntryWithData(myentrystring)
+	myentry := newEnterEntry(cfg)
+	myentry.OnSubmitted = func(s string) {
+		myentry.SetText("")
+		run_and_update(s)
+	}
+	myentry.OnChanged = func(s string) {
+
 	}
 	mylabel := widget.NewLabelWithData(mylabelstring)
 	/*
@@ -59,8 +74,61 @@ func makeUI(intp *rpncalc.Interpreter) (fyne.CanvasObject, *fyne.MainMenu) {
 	footer := container.NewVBox(myentry, mylabel)
 	file_menu_one := fyne.NewMenuItem("Test", func() { fmt.Print("test clicked") })
 	file_menu := fyne.NewMenu("File", file_menu_one)
-	main_menu := fyne.NewMainMenu(file_menu)
-	return container.New(layout.NewBorderLayout(nil, footer, nil, nil), footer, list), main_menu
+
+	user_menus := make([]*fyne.MenuItem, 0)
+	for k := range cfg.UserMenu {
+		v := cfg.UserMenu[k]
+		newitem := fyne.NewMenuItem(k, func() { run_and_update(v) })
+		user_menus = append(user_menus, newitem)
+	}
+	user_menu := fyne.NewMenu("User", user_menus...)
+
+	op_menus := make(map[string][]*fyne.MenuItem)
+	ops := intp.Operators()
+	for i := range ops {
+		op := ops[i]
+		names := strings.Split(op.Name, ".")
+		prefix := names[0]
+		name := names[0]
+		if len(names) == 1 {
+			prefix = "builtin"
+		} else {
+			name = names[1]
+		}
+
+		m, ok := op_menus[prefix]
+		if !ok {
+			m = make([]*fyne.MenuItem, 0)
+		}
+
+		newitem := fyne.NewMenuItem(name, func() { run_and_update(op.Name) })
+		m = append(m, newitem)
+		op_menus[prefix] = m
+	}
+
+	menus := make([]*fyne.Menu, 2)
+	menus[0] = file_menu
+	menus[1] = user_menu
+	for k := range op_menus {
+		v := op_menus[k]
+		new_menu := fyne.NewMenu(k, v...)
+		menus = append(menus, new_menu)
+	}
+
+	main_menu := fyne.NewMainMenu(menus...)
+
+	favorites := make([]fyne.CanvasObject, 0)
+	for k := range cfg.Favorites {
+		v := cfg.Favorites[k]
+		btn := widget.NewButton(k,
+			func() {
+				run_and_update(v)
+			})
+		favorites = append(favorites, btn)
+	}
+
+	quick_bar := container.NewVBox(favorites...)
+	return container.New(layout.NewBorderLayout(nil, footer, nil, quick_bar), footer, list, quick_bar), main_menu
 	//return container.NewVBox(list, myentry, mylabel)
 }
 
@@ -68,16 +136,26 @@ func main() {
 	a := app.New()
 	w := a.NewWindow("Widget Binding")
 
+	shutdown = make(chan struct{})
+
 	intp := rpncalc.NewInterpreter()
 	intp.AddOperators(plugins.Extended_Math_Ops)
 	intp.AddOperators(plugins.Conversion_Ops)
 
-	ui, menu := makeUI(intp)
+	cfg := LoadConfig()
+
+	ui, menu := makeUI(intp, cfg)
 	w.SetMainMenu(menu)
 
 	w.SetContent(ui)
 
 	w.Resize(fyne.NewSize(300, 400))
 
+	icon := fyne.NewStaticResource("calcicon", iconpng)
+	w.SetIcon(icon)
+
 	w.ShowAndRun()
+
+	close(shutdown)
+	shutdown_complete.Wait()
 }

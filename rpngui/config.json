@@ -1,0 +1,18 @@
+{
+    "favorites_comment": "fill in favorites with string:string mapping of buttontext:command_data.  These items will appear in the quick bar on the right side of the calculator",
+    "favorites": {
+        "hex": "hex",
+        "dec": "dec",
+        "bin": "bin",
+        "m->in": "conv.m_to_in",
+        "in->m": "conv.in_to_m",
+        "m/s->ft/min":"conv.m_to_ft 60 *",
+        "ft/min->m/s": "conv.ft_to_m 60 /"
+    },
+    "usermenu_comment": "fill in usermenu with string:string mapping of menutext:command_data.  These items will appear in the user menu on the top bar",
+    "usermenu": {
+        "bin":"bin"
+    },
+    "history_comment": "number of history entries to keep between sessions.",
+    "history": 100
+}
