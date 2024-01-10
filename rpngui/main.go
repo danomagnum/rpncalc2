@@ -32,9 +32,7 @@ func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne
 			o.(*widget.Label).SetText(data[i])
 		})
 
-	//estring := ""
 	lstring := ""
-	//myentrystring := binding.BindString(&estring)
 	mylabelstring := binding.BindString(&lstring)
 
 	run_and_update := func(s string) {
@@ -48,11 +46,9 @@ func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne
 		for i := range intp.Stack {
 			data[i] = intp.Stack[i].String()
 		}
-		//data = append(data, s)
 		list.Refresh()
 	}
 
-	//myentry := widget.NewEntryWithData(myentrystring)
 	myentry := newEnterEntry(cfg)
 	myentry.OnSubmitted = func(s string) {
 		myentry.SetText("")
@@ -62,15 +58,7 @@ func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne
 
 	}
 	mylabel := widget.NewLabelWithData(mylabelstring)
-	/*
-		mybutton := widget.NewButton("Convert",
-			func() {
-				myinput, _ := strconv.Atoi(estring)
-				myinput = myinput * 3
-				myoutput := strconv.Itoa(myinput)
-				mylabelstring.Set(myoutput)
-			})
-	*/
+
 	footer := container.NewVBox(myentry, mylabel)
 	file_menu_one := fyne.NewMenuItem("Test", func() { fmt.Print("test clicked") })
 	file_menu := fyne.NewMenu("File", file_menu_one)
@@ -129,7 +117,6 @@ func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne
 
 	quick_bar := container.NewVBox(favorites...)
 	return container.New(layout.NewBorderLayout(nil, footer, nil, quick_bar), footer, list, quick_bar), main_menu
-	//return container.NewVBox(list, myentry, mylabel)
 }
 
 func main() {

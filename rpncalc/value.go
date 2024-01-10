@@ -2,6 +2,7 @@ package rpncalc
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/shopspring/decimal"
 )
@@ -38,11 +39,14 @@ func (v *Value) String() string {
 	case ReprAny:
 		return val.String()
 	case ReprBinary:
-		return fmt.Sprintf("0b%b", val.IntPart())
+		numstr := fmt.Sprintf("%b", val.IntPart())
+		return fmt.Sprintf("0x%s", format_number_with_spaces(numstr, 4))
 	case ReprDecimal:
-		return fmt.Sprintf("%d", val.IntPart())
+		numstr := fmt.Sprintf("%d", val.IntPart())
+		return fmt.Sprintf("0x%s", format_number_with_spaces(numstr, 3))
 	case ReprHex:
-		return fmt.Sprintf("0x%X", val.IntPart())
+		numstr := fmt.Sprintf("%X", val.IntPart())
+		return fmt.Sprintf("0x%s", format_number_with_spaces(numstr, 4))
 	default:
 		return val.String()
 	}
@@ -50,4 +54,25 @@ func (v *Value) String() string {
 
 func NewValue(val decimal.Decimal) *Value {
 	return &Value{DecimalValue: val}
+}
+
+func format_number_with_spaces(s string, cnt int) string {
+	cnt0 := len(s)
+	padding_needed := cnt - cnt0%cnt
+	if padding_needed == cnt {
+		padding_needed = 0
+	}
+	out := strings.Builder{}
+	for i := 0; i < padding_needed; i++ {
+		out.WriteByte('0')
+	}
+	for i := range s {
+		totalpos := i + padding_needed
+		if totalpos%cnt == 0 && totalpos != 0 {
+			out.WriteByte('_')
+		}
+		out.WriteByte(s[i])
+	}
+
+	return out.String()
 }
