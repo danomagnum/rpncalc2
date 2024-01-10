@@ -40,10 +40,10 @@ func (v *Value) String() string {
 		return val.String()
 	case ReprBinary:
 		numstr := fmt.Sprintf("%b", val.IntPart())
-		return fmt.Sprintf("0x%s", format_number_with_spaces(numstr, 4))
+		return fmt.Sprintf("0b%s", format_number_with_spaces(numstr, 4))
 	case ReprDecimal:
 		numstr := fmt.Sprintf("%d", val.IntPart())
-		return fmt.Sprintf("0x%s", format_number_with_spaces(numstr, 3))
+		return format_number_with_spaces(numstr, 3)
 	case ReprHex:
 		numstr := fmt.Sprintf("%X", val.IntPart())
 		return fmt.Sprintf("0x%s", format_number_with_spaces(numstr, 4))

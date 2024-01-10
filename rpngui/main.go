@@ -20,7 +20,19 @@ var data = []string{}
 var shutdown_complete sync.WaitGroup
 var shutdown chan struct{}
 
-func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne.MainMenu) {
+func main() {
+	a := app.New()
+	fyne.CurrentApp().Settings().SetTheme(myTheme{})
+	w := a.NewWindow("Widget Binding")
+
+	shutdown = make(chan struct{})
+
+	intp := rpncalc.NewInterpreter()
+	intp.AddOperators(plugins.Extended_Math_Ops)
+	intp.AddOperators(plugins.Conversion_Ops)
+
+	cfg := LoadConfig()
+
 	list := widget.NewList(
 		func() int {
 			return len(data)
@@ -116,30 +128,15 @@ func makeUI(intp *rpncalc.Interpreter, cfg configfile) (fyne.CanvasObject, *fyne
 	}
 
 	quick_bar := container.NewVBox(favorites...)
-	return container.New(layout.NewBorderLayout(nil, footer, nil, quick_bar), footer, list, quick_bar), main_menu
-}
-
-func main() {
-	a := app.New()
-	w := a.NewWindow("Widget Binding")
-
-	shutdown = make(chan struct{})
-
-	intp := rpncalc.NewInterpreter()
-	intp.AddOperators(plugins.Extended_Math_Ops)
-	intp.AddOperators(plugins.Conversion_Ops)
-
-	cfg := LoadConfig()
-
-	ui, menu := makeUI(intp, cfg)
-	w.SetMainMenu(menu)
+	ui := container.New(layout.NewBorderLayout(nil, footer, nil, quick_bar), footer, list, quick_bar)
+	w.SetMainMenu(main_menu)
 
 	w.SetContent(ui)
-
-	w.Resize(fyne.NewSize(300, 400))
-
 	icon := fyne.NewStaticResource("calcicon", iconpng)
 	w.SetIcon(icon)
+
+	w.Resize(fyne.NewSize(300, 400))
+	w.Canvas().Focus(myentry)
 
 	w.ShowAndRun()
 

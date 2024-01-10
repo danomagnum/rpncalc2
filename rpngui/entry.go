@@ -1,8 +1,6 @@
 package main
 
 import (
-	"fmt"
-
 	"fyne.io/fyne/v2"
 	"fyne.io/fyne/v2/widget"
 )
@@ -15,7 +13,6 @@ type enterEntry struct {
 }
 
 func (e *enterEntry) onEnter() {
-	fmt.Printf("adding %s to history\n", e.Entry.Text)
 	e.history = append(e.history, e.Entry.Text)
 	e.history_pos = 0
 }
@@ -33,7 +30,6 @@ func (e *enterEntry) onDown() {
 
 func (e *enterEntry) updateHistoryPos() {
 	count := len(e.history)
-	fmt.Printf("history pos: %d/%d\n", e.history_pos, count)
 	if e.history_pos < 0 {
 		e.history_pos = -1
 		e.Entry.SetText("")
@@ -88,7 +84,6 @@ func (e *enterEntry) KeyDown(key *fyne.KeyEvent) {
 		e.onEnter()
 		e.Entry.KeyDown(key)
 	default:
-		fmt.Print(key)
 		e.Entry.KeyDown(key)
 	}
 }
