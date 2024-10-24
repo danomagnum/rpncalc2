@@ -23,7 +23,7 @@ var shutdown chan struct{}
 func main() {
 	a := app.New()
 	fyne.CurrentApp().Settings().SetTheme(myTheme{})
-	w := a.NewWindow("Widget Binding")
+	w := a.NewWindow("RPN Calculator")
 
 	shutdown = make(chan struct{})
 
