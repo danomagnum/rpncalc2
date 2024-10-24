@@ -20,10 +20,33 @@ var data = []string{}
 var shutdown_complete sync.WaitGroup
 var shutdown chan struct{}
 
+type TapLabel struct {
+	*widget.Label
+	window *fyne.Window
+}
+
+func (mc *TapLabel) Tapped(*fyne.PointEvent) {
+	fmt.Printf("Tapped on '%s'\n", mc.Text)
+
+	w := *mc.window
+	w.Clipboard().SetContent(mc.Text)
+}
+
+func NewTapLabel(text string, w *fyne.Window) *TapLabel {
+	return NewTapLabelWithStyle(text, fyne.TextAlignLeading, fyne.TextStyle{}, w)
+}
+
+func NewTapLabelWithStyle(text string, alignment fyne.TextAlign, style fyne.TextStyle, w *fyne.Window) *TapLabel {
+	return &TapLabel{
+		widget.NewLabelWithStyle(text, alignment, style),
+		w,
+	}
+}
+
 func main() {
 	a := app.New()
 	fyne.CurrentApp().Settings().SetTheme(myTheme{})
-	w := a.NewWindow("RPN Calculator")
+	mainWindow := a.NewWindow("RPN Calculator")
 
 	shutdown = make(chan struct{})
 
@@ -38,10 +61,11 @@ func main() {
 			return len(data)
 		},
 		func() fyne.CanvasObject {
-			return widget.NewLabel("template")
+			return NewTapLabel("template", &mainWindow)
 		},
 		func(i widget.ListItemID, o fyne.CanvasObject) {
-			o.(*widget.Label).SetText(data[i])
+			lbl := o.(*TapLabel)
+			lbl.SetText(data[i])
 		})
 
 	lstring := ""
@@ -129,16 +153,16 @@ func main() {
 
 	quick_bar := container.NewVBox(favorites...)
 	ui := container.New(layout.NewBorderLayout(nil, footer, nil, quick_bar), footer, list, quick_bar)
-	w.SetMainMenu(main_menu)
+	mainWindow.SetMainMenu(main_menu)
 
-	w.SetContent(ui)
+	mainWindow.SetContent(ui)
 	icon := fyne.NewStaticResource("calcicon", iconpng)
-	w.SetIcon(icon)
+	mainWindow.SetIcon(icon)
 
-	w.Resize(fyne.NewSize(300, 400))
-	w.Canvas().Focus(myentry)
+	mainWindow.Resize(fyne.NewSize(300, 400))
+	mainWindow.Canvas().Focus(myentry)
 
-	w.ShowAndRun()
+	mainWindow.ShowAndRun()
 
 	close(shutdown)
 	shutdown_complete.Wait()
