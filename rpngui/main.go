@@ -26,8 +26,6 @@ type TapLabel struct {
 }
 
 func (mc *TapLabel) Tapped(*fyne.PointEvent) {
-	fmt.Printf("Tapped on '%s'\n", mc.Text)
-
 	w := *mc.window
 	w.Clipboard().SetContent(mc.Text)
 }
