@@ -23,7 +23,7 @@ var shutdown chan struct{}
 func main() {
 	a := app.New()
 	fyne.CurrentApp().Settings().SetTheme(myTheme{})
-	w := a.NewWindow("Widget Binding")
+	w := a.NewWindow("RPN Calc")
 
 	shutdown = make(chan struct{})
 
@@ -70,8 +70,74 @@ func main() {
 
 	}
 	mylabel := widget.NewLabelWithData(mylabelstring)
+	mylabel.Truncation = fyne.TextTruncateEllipsis
 
-	footer := container.NewVBox(myentry, mylabel)
+	addButton := func(s string) *widget.Button {
+		button := widget.NewButton(s, func() {
+			myentry.Append(s)
+		})
+		return button
+	}
+
+	keypadBox := container.NewGridWithColumns(1,
+		container.NewGridWithColumns(5,
+			widget.NewButton("drop", func() {
+				if myentry.Text != "" {
+					myentry.SetText("")
+				} else {
+					run_and_update("drop")
+				}
+			}),
+			addButton(" [ "),
+			widget.NewButton("␣", func() { myentry.Append(" ") }),
+			addButton(" ] "),
+			widget.NewButton("÷", func() { myentry.Append(" / ") })),
+		container.NewGridWithColumns(5,
+			addButton(" := "),
+			addButton("7"),
+			addButton("8"),
+			addButton("9"),
+			addButton(" * ")),
+		container.NewGridWithColumns(5,
+			addButton(" x "),
+			addButton("4"),
+			addButton("5"),
+			addButton("6"),
+			widget.NewButton("-", func() {
+				s := myentry.Text
+				if len(s) == 0 {
+					myentry.Append("-")
+					return
+				}
+				if s[len(s)-1] == ' ' {
+					myentry.Append("-")
+					return
+				}
+				myentry.Append(" -")
+			})),
+		container.NewGridWithColumns(5,
+			addButton(" y "),
+			addButton("1"),
+			addButton("2"),
+			addButton("3"),
+			addButton(" + ")),
+		container.NewGridWithColumns(5,
+			addButton(" z "),
+			addButton(" ! "),
+			addButton("0"),
+			addButton("."),
+			widget.NewButton("⏎", func() {
+				s := myentry.Text
+				myentry.OnSubmitted(s)
+			}),
+		))
+
+	var footer *fyne.Container
+	if cfg.ShowNumpad {
+		footer = container.NewVBox(myentry, keypadBox, mylabel)
+	} else {
+		footer = container.NewVBox(myentry, mylabel)
+	}
 	file_menu_one := fyne.NewMenuItem("Test", func() { fmt.Print("test clicked") })
 	file_menu := fyne.NewMenu("File", file_menu_one)
 

@@ -12,9 +12,10 @@ import (
 var iconpng []byte
 
 type configfile struct {
-	Favorites map[string]string `json:"favorites"`
-	History   int               `json:"history"`
-	UserMenu  map[string]string `json:"usermenu"`
+	Favorites  map[string]string `json:"favorites"`
+	History    int               `json:"history"`
+	UserMenu   map[string]string `json:"usermenu"`
+	ShowNumpad bool              `json:"show_numpad"`
 }
 
 func LoadConfig() configfile {
