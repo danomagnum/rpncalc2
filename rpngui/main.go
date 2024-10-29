@@ -44,7 +44,6 @@ func NewTapLabelWithStyle(text string, alignment fyne.TextAlign, style fyne.Text
 func main() {
 	a := app.New()
 	fyne.CurrentApp().Settings().SetTheme(myTheme{})
-	w := a.NewWindow("RPN Calc")
 	mainWindow := a.NewWindow("RPN Calculator")
 
 	shutdown = make(chan struct{})
