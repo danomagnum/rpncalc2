@@ -21,7 +21,7 @@ var shutdown_complete sync.WaitGroup
 var shutdown chan struct{}
 
 type TapLabel struct {
-	*widget.Label
+	widget.Label
 	window *fyne.Window
 }
 
@@ -35,16 +35,20 @@ func NewTapLabel(text string, w *fyne.Window) *TapLabel {
 }
 
 func NewTapLabelWithStyle(text string, alignment fyne.TextAlign, style fyne.TextStyle, w *fyne.Window) *TapLabel {
-	return &TapLabel{
-		widget.NewLabelWithStyle(text, alignment, style),
-		w,
-	}
+	tl := &TapLabel{}
+	tl.ExtendBaseWidget(tl)
+	tl.Label.SetText(text)
+	tl.Label.Alignment = alignment
+	tl.Label.TextStyle = style
+	//tl.Label = *widget.NewLabelWithStyle(text, alignment, style)
+	tl.window = w
+
+	return tl
 }
 
 func main() {
 	a := app.New()
 	fyne.CurrentApp().Settings().SetTheme(myTheme{})
-	w := a.NewWindow("RPN Calc")
 	mainWindow := a.NewWindow("RPN Calculator")
 
 	shutdown = make(chan struct{})
@@ -65,6 +69,8 @@ func main() {
 		func(i widget.ListItemID, o fyne.CanvasObject) {
 			lbl := o.(*TapLabel)
 			lbl.SetText(data[i])
+			lbl.Refresh()
+			fmt.Printf("setting %d to %s\n", i, data[i])
 		})
 
 	lstring := ""
