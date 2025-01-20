@@ -48,7 +48,8 @@ func (i *Interpreter) Parse(s string) error {
 			if token[0] == '0' {
 				// could be a fancy number
 				if token[1] == 'x' || token[1] == 'X' {
-					val, err := strconv.ParseInt(token[2:], 16, 64)
+					parsable := strings.ReplaceAll(token[2:], "_", "")
+					val, err := strconv.ParseInt(parsable, 16, 64)
 					if err != nil {
 						return fmt.Errorf("could not parse '%s' as a hex number: %v", token, err)
 					}
@@ -58,7 +59,8 @@ func (i *Interpreter) Parse(s string) error {
 					continue
 				}
 				if token[1] == 'b' || token[1] == 'B' {
-					val, err := strconv.ParseInt(token[2:], 2, 64)
+					parsable := strings.ReplaceAll(token[2:], "_", "")
+					val, err := strconv.ParseInt(parsable, 2, 64)
 					if err != nil {
 						return fmt.Errorf("could not parse '%s' as a binary number: %v", token, err)
 					}
