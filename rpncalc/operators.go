@@ -27,7 +27,7 @@ var BuiltinOperators []Operator
 func init() {
 
 	BuiltinOperators = []Operator{
-		OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod, // Arithmetic Operators
+		OP_Add, OP_Sub, OP_Mul, OP_Div, OP_Mod, OP_Pow, // Arithmetic Operators
 		OP_GT, OP_LT, OP_GTE, OP_LTE, OP_EQ, OP_If, OP_IfElse, // Comparison Operators
 		OP_Drop, OP_Drop2, OP_Swap, OP_Dup, OP_Rot, OP_Over, OP_Tuck, OP_Pick, OP_Roll, // Movement Operators
 		OP_Assign, OP_DeRef, // Variable Operators

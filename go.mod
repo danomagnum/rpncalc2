@@ -4,7 +4,7 @@ go 1.21.4
 
 require (
 	fyne.io/fyne/v2 v2.4.3
-	github.com/shopspring/decimal v1.3.1
+	github.com/shopspring/decimal v1.4.0
 )
 
 require (
